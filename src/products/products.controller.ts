@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Query,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -22,36 +23,34 @@ export class ProductsController {
   //@Post()
   @MessagePattern({cmd: 'create_product'})
   create(@Payload() createProductDto: CreateProductDto) {
-    return this.productsService.create(createProductDto);
+    return this.productsService.createProduct(createProductDto);
   }
 
  // @Get()
- @MessagePattern('fiind_all_products')
-  findAll(@Payload() paginationDto: PaginationDto) {
-    return this.productsService.findAll(paginationDto);
+ @MessagePattern({cmd:'find_all_products'})
+  findAll(@Payload() paginationDto:PaginationDto) {
+    return this.productsService.findAllProducts(paginationDto);
   }
 
-  //@Get(':id')
-  @MessagePattern('find_product_by_id')
-  async findOne(@Payload('id') params: FindOneParams) {
-    const result = await this.productsService.findOne(params.id);
+  //@Get(':id')params: FindOneParams
+  @MessagePattern({cmd:'find_product_by_id'})
+  async findOne(@Payload()findOneParams:FindOneParams) {
+    const result = await this.productsService.findProductById(findOneParams.id);
+    return result;
+  }
+  
+  //@Patch(':id')
+  @MessagePattern({cmd:'update_product'})
+ async update(@Payload()payload: { params:FindOneParams; updateProductDto: UpdateProductDto }) {
+    const result = await this.productsService.updateProduct(payload.params.id,payload.updateProductDto);
+    console.log(payload)
     return result;
   }
 
-  //@Patch(':id')
-  @MessagePattern('update_product')
-  update(
-    //@Body() 
-    updateProductDto: UpdateProductDto,
-    @Payload('id')params: FindOneParams,
-    
-    ) {
-    return this.productsService.update(params.id, updateProductDto);
-  }
-
   //@Delete(':id')
-  @MessagePattern('delete_product')
-  remove(@Payload('id')params: FindOneParams ) {
-    return this.productsService.remove(params.id);
+  @MessagePattern({cmd:'delete_product'})
+  async remove(@Payload()params:FindOneParams ) {
+    const result = await this.productsService.removeProduct(params.id);
+    return result;
   }
 }

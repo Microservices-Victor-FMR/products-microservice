@@ -1,14 +1,29 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/prisma.service';
+import { RpcException } from '@nestjs/microservices';
+import { ErrorHandlerService } from 'src/common/errors/error-handler-service';
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(private readonly prismaService: PrismaService, private readonly errorHandlerService: ErrorHandlerService) {}
 
-  async create(createProductDto: CreateProductDto) {
+  async createProduct(createProductDto: CreateProductDto) {
+    const { name } = createProductDto;
+    const findProduct = await this.prismaService.product.findFirst({ where: { name: name } });
+
+    if (findProduct) {
+      this.errorHandlerService.ErrorFound(`Este Producto ${name}, Ya Existe.`, "Products");
+    }
+
     const result = await this.prismaService.product.create({
       data: {
         name: createProductDto.name,
@@ -16,10 +31,10 @@ export class ProductsService {
       },
     });
 
-    return result;
+    return { message: `Producto ${name} creado`, data: result };
   }
 
-  async findAll(paginationDto: PaginationDto) {
+  async findAllProducts(paginationDto: PaginationDto) {
     const { page, limit } = paginationDto;
     const total_register = await this.prismaService.product.count();
     const totalPages = Math.ceil(total_register / limit);
@@ -27,7 +42,7 @@ export class ProductsService {
     const result = await this.prismaService.product.findMany({
       skip: (page - 1) * limit,
       take: limit,
-      where:{available:true}
+      where: { available: true },
     });
 
     return {
@@ -37,29 +52,46 @@ export class ProductsService {
     };
   }
 
-  async findOne(id: number) {
-    const findById = await this.prismaService.product.findUnique({ where: { id: id,available:true } });
-    if (!findById) {
-      throw new NotFoundException(`Product with id ${id} not found`);
+  async findProductById(id: number) {
+    const product = await this.prismaService.product.findUnique({ where: { id: id } });
+
+    if (!product) {
+      this.errorHandlerService.ErrorNotFound("Producto no encontrado", "Products");
     }
-    return findById;
+    return product;
   }
 
-  async update(id: number, updateProductDto: UpdateProductDto) {
-   await this.findOne(id)
+  async updateProduct(id: number, updateProductDto: UpdateProductDto) {
+    const findProduct = await this.findProductById(id);
+
+    if (!findProduct) {
+      this.errorHandlerService.ErrorNotFound("Producto no encontrado", "Products");
+    }
+
 
     const updatedProduct = await this.prismaService.product.update({
       where: { id: id },
       data: updateProductDto,
     });
 
-    return updatedProduct;
+    return { message: "Producto actualizado correctamente", data: updatedProduct };
   }
 
-  async remove(id: number) {
-   await this.findOne(id)
+  async removeProduct(id: number) {
+    const findProduct = (await this.findProductById(id));
+    if (!findProduct) {
+      this.errorHandlerService.ErrorNotFound( 'Producto no encontrado', "Products");
+    }
 
-    await this.prismaService.product.update({data:{available: false},where:{id:id}})
+    if(findProduct.available=== false){
+      this.errorHandlerService.ErrorGone('Producto ya no disponible', 'Products');
+
+
+    }
+    await this.prismaService.product.update({
+      data: { available: false },
+      where: { id: id },
+    });
     return { message: `Product with id ${id} has been removed` };
   }
 }

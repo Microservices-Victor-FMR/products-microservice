@@ -1,11 +1,12 @@
 
 import { Type } from 'class-transformer';
-import { IsInt, IsNumberString, IsPositive, Min } from 'class-validator';
+import { IsInt, IsNumberString, IsOptional, IsPositive, IsString, Min } from 'class-validator';
 
 export class FindOneParams {
-    @Type(()=>Number)
+  @Type(()=>Number)
   @IsInt()
   @IsPositive()
   @Min(0)
   id: number;
+
 }

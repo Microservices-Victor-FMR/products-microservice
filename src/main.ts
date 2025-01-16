@@ -5,7 +5,7 @@ import { MicroserviceOptions ,Transport} from '@nestjs/microservices';
 
 async function bootstrap() {
   const logger = new Logger('Main');
-const port = parseInt(process.env.PORT) || 3000;
+  const port = parseInt(process.env.PORT) || 3000;
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(
     AppModule,{
       transport: Transport.TCP,
@@ -16,10 +16,11 @@ const port = parseInt(process.env.PORT) || 3000;
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
+    // transform:true
       //disableErrorMessages: true,
     }),
   );
   await app.listen();
-  logger.log(`Products Microservices running on Port: ${process.env.PORT}`);
+  logger.log(`Products Microservices running on Port: ${port}`);
 }
 bootstrap();
