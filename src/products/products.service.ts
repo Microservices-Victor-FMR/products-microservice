@@ -16,17 +16,19 @@ export class ProductsService {
   constructor(private readonly prismaService: PrismaService, private readonly errorHandlerService: ErrorHandlerService) {}
 
   async createProduct(createProductDto: CreateProductDto) {
-    const { name } = createProductDto;
-    const findProduct = await this.prismaService.product.findFirst({ where: { name: name } });
+    const { name,image_url,price,descripcion } = createProductDto;
+    const findProduct = await this.prismaService.products.findFirst({ where: { name: name } });
 
     if (findProduct) {
       this.errorHandlerService.ErrorFound(`Este Producto ${name}, Ya Existe.`, "Products");
     }
 
-    const result = await this.prismaService.product.create({
+    const result = await this.prismaService.products.create({
       data: {
-        name: createProductDto.name,
-        price: createProductDto.price,
+        name: name,
+        price: price,
+        description: descripcion,
+        image_url: image_url,
       },
     });
 
@@ -35,10 +37,10 @@ export class ProductsService {
 
   async findAllProducts(paginationDto: PaginationDto) {
     const { page, limit } = paginationDto;
-    const total_register = await this.prismaService.product.count();
+    const total_register = await this.prismaService.products.count();
     const totalPages = Math.ceil(total_register / limit);
 
-    const result = await this.prismaService.product.findMany({
+    const result = await this.prismaService.products.findMany({
       skip: (page - 1) * limit,
       take: limit,
       where: { available: true },
@@ -51,9 +53,9 @@ export class ProductsService {
     };
   }
 
-  async findProductById(id: number) {
+  async findProductById(id: string) {
     
-      const product = await this.prismaService.product.findUnique({ where: { id: id } });
+      const product = await this.prismaService.products.findUnique({ where: { id: id } });
 
       if (!product) {
         this.errorHandlerService.ErrorNotFound("Producto no encontrado", "Products");
@@ -61,7 +63,7 @@ export class ProductsService {
       return product;
   }
 
-  async updateProduct(id: number, updateProductDto: UpdateProductDto) {
+  async updateProduct(id: string, updateProductDto: UpdateProductDto) {
     const findProduct = await this.findProductById(id);
 
     if (!findProduct) {
@@ -69,7 +71,7 @@ export class ProductsService {
     }
 
 
-    const updatedProduct = await this.prismaService.product.update({
+    const updatedProduct = await this.prismaService.products.update({
       where: { id: id },
       data: updateProductDto,
     });
@@ -77,7 +79,7 @@ export class ProductsService {
     return { message: "Producto actualizado correctamente", data: updatedProduct };
   }
 
-  async removeProduct(id: number) {
+  async removeProduct(id: string) {
     const findProduct = (await this.findProductById(id));
     if (!findProduct) {
       this.errorHandlerService.ErrorNotFound( 'Producto no encontrado', "Products");
@@ -88,7 +90,7 @@ export class ProductsService {
 
 
     }
-    await this.prismaService.product.update({
+    await this.prismaService.products.update({
       data: { available: false },
       where: { id: id },
     });

@@ -12,14 +12,16 @@ export class ProductsController {
 
 
   @MessagePattern({cmd: 'create_product'})
-  create(@Payload() createProductDto: CreateProductDto) {
-    return this.productsService.createProduct(createProductDto);
+  async create(@Payload() createProductDto: CreateProductDto) {
+   const result = await this.productsService.createProduct(createProductDto);
+   return result;
   }
 
  
  @MessagePattern({cmd:'find_all_products'})
-  findAll(@Payload() paginationDto:PaginationDto) {
-    return this.productsService.findAllProducts(paginationDto);
+ async findAll(@Payload() paginationDto:PaginationDto) {
+   const result = await this.productsService.findAllProducts(paginationDto);
+   return result;
   }
 
   
@@ -30,9 +32,8 @@ export class ProductsController {
   }
  
   @MessagePattern({cmd:'update_product'})
- async update(@Payload()payload: { params:FindOneParams; updateProductDto: UpdateProductDto }) {
+  async update(@Payload()payload: { params:FindOneParams; updateProductDto: UpdateProductDto }) {
     const result = await this.productsService.updateProduct(payload.params.id,payload.updateProductDto);
-    console.log(payload)
     return result;
   }
 
