@@ -13,12 +13,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Product {
-  id        Int      @id @default(autoincrement())
-  name      String
-  price     Float
-  available Boolean  @default(true)
+model Products {
+  id          String   @id @default(uuid())
+  name        String
+  price       Float
+  description String?
+  available   Boolean  @default(true)
+  image_url   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
   @@index([available])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }

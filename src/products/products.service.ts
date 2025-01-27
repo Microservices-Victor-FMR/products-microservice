@@ -9,7 +9,6 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { PrismaService } from 'src/prisma.service';
-import { RpcException } from '@nestjs/microservices';
 import { ErrorHandlerService } from 'src/common/errors/error-handler-service';
 
 @Injectable()
@@ -53,12 +52,13 @@ export class ProductsService {
   }
 
   async findProductById(id: number) {
-    const product = await this.prismaService.product.findUnique({ where: { id: id } });
+    
+      const product = await this.prismaService.product.findUnique({ where: { id: id } });
 
-    if (!product) {
-      this.errorHandlerService.ErrorNotFound("Producto no encontrado", "Products");
-    }
-    return product;
+      if (!product) {
+        this.errorHandlerService.ErrorNotFound("Producto no encontrado", "Products");
+      }
+      return product;
   }
 
   async updateProduct(id: number, updateProductDto: UpdateProductDto) {

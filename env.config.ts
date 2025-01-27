@@ -7,9 +7,11 @@ export const envSchema = joi
       .valid('development', 'production', 'test')
       .default('development'),
     PORT: joi.number().integer().min(0).max(65535).required(),
-    DATABASE_URL: joi.string().required(),
-    DB_USER: joi.string().required(),
-    DB_PASSWORD: joi.string().required(),
-    DB_NAME: joi.string().required(),
+    HOST: joi.string().required(),
+    DATABASE_URL:joi.string().required(),
+   
+  //Nats configuration
+   NATS_URL:joi.string().required(),
+
   })
   .unknown(true);
