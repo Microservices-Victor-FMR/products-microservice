@@ -1,5 +1,5 @@
 
-import {IsNotEmpty,IsUUID } from 'class-validator';
+import {IsBoolean, IsNotEmpty,IsOptional,IsUUID } from 'class-validator';
 
 export class FindOneParams {
 
