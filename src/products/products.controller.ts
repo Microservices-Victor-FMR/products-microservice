@@ -5,6 +5,7 @@ import { UpdateProductDto } from './dto/update-product.dto';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { FindOneParams } from './dto/findOne-product.dto';
 import { MessagePattern, Payload } from '@nestjs/microservices';
+import { FindProductsByIdsDto } from './dto/findProductsByIds-product.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -27,13 +28,14 @@ export class ProductsController {
   
   @MessagePattern({cmd:'find_product_by_id'})
   async findOne(@Payload()findOneParams:FindOneParams) {
-    const result = await this.productsService.findProductById(findOneParams.id);
+    const {id}= findOneParams
+    const result = await this.productsService.findProductById(id);
     return result;
   }
  
   @MessagePattern({cmd:'update_product'})
   async update(@Payload()payload: { params:FindOneParams; updateProductDto: UpdateProductDto }) {
-    const result = await this.productsService.updateProduct(payload.params.id,payload.updateProductDto);
+    const result = await this.productsService.updateProduct(payload.params.id, payload.updateProductDto);
     return result;
   }
 
@@ -42,4 +44,11 @@ export class ProductsController {
     const result = await this.productsService.removeProduct(params.id);
     return result;
   }
+
+  @MessagePattern({cmd:'find_products_by_ids'})
+  async findProductsByIds(@Payload()payload: FindProductsByIdsDto) {
+
+      const result = await this.productsService.findproductsByIds(payload.ids);
+      return result;
+    }
 }
